@@ -1,35 +1,88 @@
 pipeline {
-    agent any 
+    agent { label 'Agent1' }  // Specify the Jenkins agent by its label
 
     environment {
-        DOCKER_CREDENTIALS = 'dockerhub-credentials' // Jenkins credentials ID for Docker Hub
-        DOCKER_IMAGE = 'ingyelkhateeb/nhorizon-java-container:latest'
+        DOCKER_USERNAME = 'ingyelkhateeb'  // Your Docker Hub username
+        DOCKER_PASSWORD = '5557070i*'      // Your Docker Hub password
+        IMAGE_NAME = 'devops-project-alx_swd1_m2d:latest'  // Name of the existing image
+        CONTAINER_PORT = '9090'  // The port your application runs on inside the container
+        HOST_PORT = '9090'       // Change to 80 to expose on port 80 on the host machine
+        CONTAINER_NAME = 'my_container'  // Name of the Docker container
     }
 
     stages {
+        
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/XP2600-hub/nhorizon-java-container.git'
+                git 'https://github.com/ingy-elkhateeb/Nhorizon-DevOps-Task---ALX_SWD1_M2d'
             }
         }
-
+        
         stage('Build Docker Image') {
+            
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+                    sh "docker build -t $DOCKER_USERNAME/$IMAGE_NAME ."
+                }
+            }
+        }
+        
+        stage('Login to Docker Hub') {
+            
+            steps {
+                script {
+                    // Log in to Docker Hub
+                    // Log in to Docker Hub
+                    sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                    
+                    // Push the image to Docker Hub
+                    sh "docker push $DOCKER_USERNAME/$IMAGE_NAME"
+                        }
+            }
+        }
+        
+        stage('Pull Docker Image') {
+            steps {
+                script {
+                    // Log in to Docker Hub
+                    sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                    
+                    // Pull the pre-built image from Docker Hub
+                    sh "docker pull $DOCKER_USERNAME/$IMAGE_NAME"
                 }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Cleanup Existing Container') {
             steps {
                 script {
-                    sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
-                    
-                    sh "docker push ${DOCKER_IMAGE}"
+                    // Stop and remove the existing container if it exists
+                    sh """
+                    if [ \$(docker ps -aq -f name=$CONTAINER_NAME) ]; then
+                        docker stop $CONTAINER_NAME || true
+                        docker rm $CONTAINER_NAME || true
+                    fi
+                    """
+                }
+            }
+        }
+
+        stage('Run Docker Image') {
+            steps {
+                script {
+                    // Run the Docker container and expose the required port (80)
+                    sh "docker run --name $CONTAINER_NAME -d -p $HOST_PORT:$CONTAINER_PORT $DOCKER_USERNAME/$IMAGE_NAME"
+                }
+            }
+        }
+
+        stage('Verify Container') {
+            steps {
+                script {
+                    // Check if the container is running
+                    sh "docker ps"
                 }
             }
         }
     }
-   
 }
