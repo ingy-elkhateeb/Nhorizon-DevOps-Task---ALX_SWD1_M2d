@@ -1,13 +1,13 @@
 pipeline {
-    agent { label 'Agent1' }  // Specify the Jenkins agent by its label
+    agent { label 'built-in' }
 
     environment {
-        DOCKER_USERNAME = 'ingyelkhateeb'  // Your Docker Hub username
-        DOCKER_PASSWORD = '5557070i*'      // Your Docker Hub password
-        IMAGE_NAME = 'devops-project-alx_swd1_m2d:latest'  // Name of the existing image
-        CONTAINER_PORT = '9090'  // The port your application runs on inside the container
-        HOST_PORT = '9090'       // Change to 80 to expose on port 80 on the host machine
-        CONTAINER_NAME = 'my_container'  // Name of the Docker container
+        DOCKER_USERNAME = 'ingyelkhateeb'
+        DOCKER_PASSWORD = '5557070i*'
+        IMAGE_NAME = 'devops-project-alx_swd1_m2d:latest'
+        CONTAINER_PORT = '9090'
+        HOST_PORT = '9090'
+        CONTAINER_NAME = 'my_container'
     }
 
     stages {
